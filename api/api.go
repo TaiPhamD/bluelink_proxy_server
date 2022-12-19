@@ -136,6 +136,7 @@ func RefreshBlueLink(next http.Handler) http.Handler {
 
 var bluelink_auth api.Auth
 var my_owner_info api.OwnerInfoService
+var vehicle_status api.VehicleStatus
 var my_car api.Vehicle
 
 func StartClimateHandler(w http.ResponseWriter, r *http.Request) {
@@ -198,7 +199,16 @@ func GetOdometerHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func GetBatteryHandler(w http.ResponseWriter, r *http.Request) {
-	vehicle_status, err := bluelink_go.GetVehicleStatus(bluelink_auth, my_car, true)
+	var err error
+	var force_refresh bool
+	//check last read time if it's older than 5 minutes than force data refresh
+	if time.Now().After(vehicle_status.ResponseString.VehicleStatus.DateTime.Add(5 * time.Minute)) {
+		force_refresh = true
+	} else {
+		force_refresh = false
+	}
+	vehicle_status, err = bluelink_go.GetVehicleStatus(bluelink_auth, my_car, force_refresh)
+
 	if err != nil {
 		log.Println("Error GetVehicleStatus: ", err)
 		w.WriteHeader(http.StatusInternalServerError)
@@ -210,6 +220,34 @@ func GetBatteryHandler(w http.ResponseWriter, r *http.Request) {
 	// convert battery status to string
 	battery_string := strconv.Itoa(vehicle_status.ResponseString.VehicleStatus.EvStatus.BatteryStatus)
 	w.Write([]byte(battery_string + " percent"))
+}
+
+func GetLocationHandler(w http.ResponseWriter, r *http.Request) {
+	var err error
+	var force_refresh bool
+	//check last read time if it's older than 5 minutes than force data refresh
+	if time.Now().After(vehicle_status.ResponseString.VehicleStatus.DateTime.Add(5 * time.Minute)) {
+		force_refresh = true
+	} else {
+		force_refresh = false
+	}
+	vehicle_status, err = bluelink_go.GetVehicleStatus(bluelink_auth, my_car, force_refresh)
+
+	if err != nil {
+		log.Println("Error GetVehicleStatus: ", err)
+		w.WriteHeader(http.StatusInternalServerError)
+		w.Write([]byte("500 - Internal Server Error"))
+		return
+	}
+
+	// convert battery status to string
+	lon := vehicle_status.ResponseString.VehicleStatus.VehicleLocation.Coord.Lon
+	lat := vehicle_status.ResponseString.VehicleStatus.VehicleLocation.Coord.Lat
+	w.WriteHeader(http.StatusOK)
+	// format long and lat to string up to 13 digit precision
+	long_string := strconv.FormatFloat(lon, 'f', 13, 64)
+	lat_string := strconv.FormatFloat(lat, 'f', 13, 64)
+	w.Write([]byte("lon: " + long_string + " lat: " + lat_string))
 }
 
 func Setup() (Config, http.Handler, error) {
@@ -241,6 +279,12 @@ func Setup() (Config, http.Handler, error) {
 		log.Fatal("Error getting vehicle: ", err)
 	}
 
+	// read vehicile status
+	vehicle_status, err = bluelink_go.GetVehicleStatus(bluelink_auth, my_car, true)
+	if err != nil {
+		log.Fatal("Error GetVehicleStatus: ", err)
+	}
+
 	limiter = rate.NewLimiter(rate.Limit(MyConfig.RateLimit), MyConfig.RateBurst)
 	mux := http.NewServeMux()
 
@@ -252,6 +296,8 @@ func Setup() (Config, http.Handler, error) {
 	mux.HandleFunc("/api/get_odometer", GetOdometerHandler)
 	// get battery
 	mux.HandleFunc("/api/get_battery", GetBatteryHandler)
+	// get location
+	mux.HandleFunc("/api/get_location", GetLocationHandler)
 	// apply middle ware for rate limiting, authentication, and bluelink token refresh
 	handler := Limit(Auth(RefreshBlueLink(mux)))
 	return MyConfig, handler, err
