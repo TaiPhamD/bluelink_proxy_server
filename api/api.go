@@ -260,6 +260,25 @@ func StopClimateHandler(w http.ResponseWriter, r *http.Request) {
 
 }
 
+func GetOdometerHandler(w http.ResponseWriter, r *http.Request) {
+	if time.Now().Unix() > (expires_at + 1800) {
+		login()
+	}
+	_, odometer, err := get_reg_id()
+	if err != nil {
+		w.Write([]byte("Error getting odometer reading"))
+		// write status 500
+		w.WriteHeader(http.StatusInternalServerError)		
+	} else {
+		w.Write([]byte("Odometer: " + odometer))
+		// write status 200
+		w.WriteHeader(http.StatusOK)		
+	}
+
+
+
+}
+
 func get_jwt_token() (string, error) {
 	/*
 		curl --location --request GET 'https://owners.hyundaiusa.com/etc/designs/ownercommon/us/token.json'
@@ -367,12 +386,12 @@ func get_jwt_id() (string, error) {
 	return jwt_id, nil
 }
 
-func get_reg_id() (string, error) {
+func get_reg_id() (string, string, error) {
 	// create new request
 	req, err := http.NewRequest("POST", "https://owners.hyundaiusa.com/bin/common/MyAccountServlet", nil)
 	if err != nil {
 		log.Println("Error creating new request: ", err)
-		return "", err
+		return "","", err
 	}
 	// set headers
 	req.Header.Set("CSRF-Token", "undefined")
@@ -395,13 +414,13 @@ func get_reg_id() (string, error) {
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
 		log.Println("Error sending request: ", err)
-		return "", err
+		return "","", err
 	}
 	defer resp.Body.Close()
 	// check response status
 	if resp.StatusCode != 200 {
 		log.Println("Error response status: ", resp.StatusCode)
-		return "", errors.New("Error response status: " + strconv.Itoa(resp.StatusCode))
+		return "","", errors.New("Error response status: " + strconv.Itoa(resp.StatusCode))
 	}
 
 	log.Println("Response Status: ", resp.Status)
@@ -410,14 +429,14 @@ func get_reg_id() (string, error) {
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
 		log.Println("Error reading response: ", err)
-		return "", err
+		return "", "",err
 	}
 	// parse response
 	var result map[string]interface{}
 	err = json.Unmarshal(body, &result)
 	if err != nil {
 		log.Println("Error parsing response: ", err)
-		return "", err
+		return "","", err
 	}
 
 	// get response info
@@ -433,10 +452,11 @@ func get_reg_id() (string, error) {
 			// get vehicle id
 			_reg_id := vehicle_info["RegistrationID"].(string)
 			log.Println("Reg ID: ", _reg_id)
-			return _reg_id, nil
+			_odometer := vehicle_info["Mileage"].(string)
+			return _reg_id,_odometer, nil
 		}
 	}
-	return "", errors.New("reg id not found")
+	return "", "",errors.New("reg id not found")
 }
 
 func login() {
@@ -449,7 +469,7 @@ func login() {
 	if err != nil {
 		log.Println("Error getting jwt_id: ", err)
 	}
-	reg_id, err = get_reg_id()
+	reg_id, _, err = get_reg_id()
 	if err != nil {
 		log.Println("Error getting reg_id: ", err)
 	}
@@ -474,6 +494,8 @@ func Setup() (Config, http.Handler, error) {
 	mux.HandleFunc("/api/start_climate", StartClimateHandler)
 	// handle Suspend stop_climate
 	mux.HandleFunc("/api/stop_climate", StopClimateHandler)
+	// get odometer
+	mux.HandleFunc("/api/get_odometer", GetOdometerHandler)
 	handler := Limit(Auth(mux))
 
 	login()
