@@ -161,7 +161,7 @@ func StartClimateHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.WriteHeader(http.StatusOK)
-	w.Write([]byte("climated started"))
+	w.Write([]byte("climate started"))
 
 }
 
@@ -176,7 +176,7 @@ func StopClimateHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.WriteHeader(http.StatusOK)
-	w.Write([]byte("climated stopped"))
+	w.Write([]byte("climate stopped"))
 }
 
 func GetOdometerHandler(w http.ResponseWriter, r *http.Request) {
