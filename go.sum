@@ -1,3 +1,7 @@
+github.com/TaiPhamD/bluelink_go v0.1.0 h1:zgt8IrZ4tkonUJjVJoD8vIQbpsO97gN/SgzL3jT1bjY=
+github.com/TaiPhamD/bluelink_go v0.1.0/go.mod h1:YiJkjWXsGkPhTFH0BzOoXuBWJNgPqW0DpEZUlEgvPKg=
+github.com/TaiPhamD/bluelink_go v0.1.1 h1:TX55rv1yLDuNU748rWW7cVusKsPVmQ+KP2KKuAu4Umw=
+github.com/TaiPhamD/bluelink_go v0.1.1/go.mod h1:YiJkjWXsGkPhTFH0BzOoXuBWJNgPqW0DpEZUlEgvPKg=
 github.com/golang-jwt/jwt/v4 v4.4.3 h1:Hxl6lhQFj4AnOX6MLrsCb/+7tCj7DxP7VA+2rDIq5AU=
 github.com/golang-jwt/jwt/v4 v4.4.3/go.mod h1:m21LjoU+eqJr34lmDMbreY2eSTRJ1cv77w39/MY0Ch0=
 github.com/kardianos/service v1.2.2 h1:ZvePhAHfvo0A7Mftk/tEzqEZ7Q4lgnR8sGz4xu1YX60=
