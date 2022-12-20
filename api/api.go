@@ -245,9 +245,9 @@ func GetLocationHandler(w http.ResponseWriter, r *http.Request) {
 	lat := vehicle_status.ResponseString.VehicleStatus.VehicleLocation.Coord.Lat
 	w.WriteHeader(http.StatusOK)
 	// format long and lat to string up to 13 digit precision
-	long_string := strconv.FormatFloat(lon, 'f', 13, 64)
+	lon_string := strconv.FormatFloat(lon, 'f', 13, 64)
 	lat_string := strconv.FormatFloat(lat, 'f', 13, 64)
-	w.Write([]byte("lon: " + long_string + " lat: " + lat_string))
+	w.Write([]byte(lat_string +"," + lon_string ))
 }
 
 func Setup() (Config, http.Handler, error) {
