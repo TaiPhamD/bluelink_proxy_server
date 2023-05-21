@@ -37,7 +37,8 @@ type Config struct {
 }
 
 type Params struct {
-	APIKey string `json:"api_key"`
+	APIKey         string  `json:"api_key"`
+	AirTemperature *string `json:"air_temperature,omitempty"`
 }
 
 type ctxBlueLinkParam struct{}
@@ -140,6 +141,10 @@ var vehicle_status api.VehicleStatus
 var my_car api.Vehicle
 
 func StartClimateHandler(w http.ResponseWriter, r *http.Request) {
+
+	// get airtmp from context
+	ctx := r.Context()
+	params := ctx.Value(ctxBlueLinkParam{}).(Params)
 	// create climate input object
 	seatingventinfo := api.SeatHeaterVentInfo{}
 	seatingventinfo.DrvSeatHeatState = "3"
@@ -147,7 +152,7 @@ func StartClimateHandler(w http.ResponseWriter, r *http.Request) {
 	StartClimateInput := api.ClimateInput{
 		AirCtrl:            "true",
 		IgniOnDuration:     "NaN", //max is 10 minutes or NaN for default 10
-		AirTempvalue:       "72",
+		AirTempvalue:       *params.AirTemperature,
 		Defrost:            "false",
 		Heating1:           "0",
 		SeatHeaterVentInfo: seatingventinfo,
@@ -247,7 +252,7 @@ func GetLocationHandler(w http.ResponseWriter, r *http.Request) {
 	// format long and lat to string up to 13 digit precision
 	lon_string := strconv.FormatFloat(lon, 'f', 13, 64)
 	lat_string := strconv.FormatFloat(lat, 'f', 13, 64)
-	w.Write([]byte(lat_string +"," + lon_string ))
+	w.Write([]byte(lat_string + "," + lon_string))
 }
 
 func Setup() (Config, http.Handler, error) {
