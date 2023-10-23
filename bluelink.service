@@ -1,0 +1,13 @@
+[Unit]
+Description=Bluelink Siri integration
+After=network.target
+
+[Service]
+ExecStart=/opt/bluelink/bluelink
+WorkingDirectory=/opt/bluelink/
+StandardOutput=inherit
+StandardError=inherit
+Restart=always
+
+[Install]
+WantedBy=multi-user.target
