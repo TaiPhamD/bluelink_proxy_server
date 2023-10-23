@@ -11,7 +11,6 @@ import (
 	"github.com/kardianos/service"
 )
 
-//
 type program struct{}
 
 func (p *program) Start(s service.Service) error {
