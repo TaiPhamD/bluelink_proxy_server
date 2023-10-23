@@ -4,9 +4,26 @@ Proxy api server to call blue link backend services to start/stop climate contro
 This web proxy service uses the [GO bluelink wrapper](https://github.com/TaiPhamD/bluelink_go)
 
 # APIs
-- /api/start_climate
-- /api/stop_climate
-- /api/get_odometer
+- [POST] /api/start_climate
+```
+{
+    "api_key":"xxxxxx",
+    "air_temperature": "72"
+}
+```
+
+- [POST] /api/stop_climate
+```
+{
+    "api_key":"xxxxxx",
+}
+```
+- [POST] /api/get_odometer
+```
+{
+    "api_key":"xxxxxx",
+}
+```
 # Usage
 ## pre-requisites
 - go lang compiler 1.16+
@@ -28,7 +45,7 @@ go build
     "rate_burst": 1,
     "fullchain": "/ssd1/apps/.lego/certificates/my_domain.duckdns.org.crt",
     "priv_key": "/ssd1/apps/.lego/certificates/my_domain.duckdns.org.key",
-    "api_key": "my_secret_key",
+    "api_key": "my_secret_key", 
     "username": "my_email@gmail.com",
     "pin": "1234",
     "password": "my_password",
