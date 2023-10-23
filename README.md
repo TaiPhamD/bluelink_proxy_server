@@ -12,7 +12,12 @@ This web proxy service uses the [GO bluelink wrapper](https://github.com/TaiPham
 - go lang compiler 1.16+
 - (optional) an SSL cert crt and private key if you want to serve this proxy server as HTTPS
 ## Compile
-- go mod download
+```
+git clone https://github.com/TaiPhamD/bluelink_proxy_server.git
+cd bluelink_proxy_server
+go mod download
+go build
+```
 ## setup config.json
 - add your info in config_example.json
 ```
