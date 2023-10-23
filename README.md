@@ -7,9 +7,14 @@ This web proxy service uses the [GO bluelink wrapper](https://github.com/TaiPham
 - /api/start_climate
 - /api/stop_climate
 - /api/get_odometer
-
-# setup config.json
-
+# Usage
+## pre-requisites
+- go lang compiler 1.16+
+- (optional) an SSL cert crt and private key if you want to serve this proxy server as HTTPS
+## Compile
+- go mod download
+## setup config.json
+- add your info in config_example.json
 ```
 {
     "tls": true,
@@ -25,3 +30,8 @@ This web proxy service uses the [GO bluelink wrapper](https://github.com/TaiPham
     "vin": "KMXXXXXXXX"
 }
 ```
+## install
+- run install_linux.sh:
+  - it will the compiled binary and config.json to /opt/bluelink/
+  - It will start a systemd service (if your linux doesn't have systemd then you need to adapt the install_linux.sh to make it work)
+
