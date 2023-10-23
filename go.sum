@@ -8,6 +8,9 @@ github.com/TaiPhamD/bluelink_go v0.1.3 h1:vW9hdBa90YKq9mc9lhl5seEOlA4docbt+t0mHw
 github.com/TaiPhamD/bluelink_go v0.1.3/go.mod h1:eeWZdy+OWMCOJuDW7DsfzO4ogdFPMM2NiX2XaU7W0ts=
 github.com/TaiPhamD/bluelink_go v0.1.4 h1:UjUZqh8Yn2sVcLUBkNUz5jGFM8aYHcigrqC/TQorvvg=
 github.com/TaiPhamD/bluelink_go v0.1.4/go.mod h1:eeWZdy+OWMCOJuDW7DsfzO4ogdFPMM2NiX2XaU7W0ts=
+github.com/TaiPhamD/bluelink_go v0.1.5-0.20231023043500-e3735ed27d76 h1:wFsdp7yUwVMMsDeQDe2MMDFYnMS03t++/HiXUiOxhsI=
+github.com/TaiPhamD/bluelink_go v0.1.5-0.20231023043500-e3735ed27d76/go.mod h1:eeWZdy+OWMCOJuDW7DsfzO4ogdFPMM2NiX2XaU7W0ts=
+github.com/TaiPhamD/bluelink_go v0.1.5/go.mod h1:eeWZdy+OWMCOJuDW7DsfzO4ogdFPMM2NiX2XaU7W0ts=
 github.com/golang-jwt/jwt/v4 v4.4.3 h1:Hxl6lhQFj4AnOX6MLrsCb/+7tCj7DxP7VA+2rDIq5AU=
 github.com/golang-jwt/jwt/v4 v4.4.3/go.mod h1:m21LjoU+eqJr34lmDMbreY2eSTRJ1cv77w39/MY0Ch0=
 github.com/golang-jwt/jwt/v4 v4.5.0 h1:7cYmW1XlMY7h7ii7UhUyChSgS5wUJEnm9uZVTGqOWzg=
