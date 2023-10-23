@@ -37,7 +37,8 @@ type Config struct {
 }
 
 type Params struct {
-	APIKey string `json:"api_key"`
+	APIKey         string  `json:"api_key"`
+	AirTemperature *string `json:"air_temperature,omitempty"`
 }
 
 type ctxBlueLinkParam struct{}
@@ -117,42 +118,49 @@ func Auth(next http.Handler) http.Handler {
 // middleware to refresh bluelink token if it expires
 func RefreshBlueLink(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		// check if current time is within 30 minutes of token expiration
-		if time.Now().After(bluelink_auth.JTW_Expiry.Add(-15 * time.Minute)) {
-			// get auth object
+		// check if current time is within 25 minutes of token expiration
+		// then refresh the token
+		expirationTime := time.Unix(bluelink_auth.ExpiresAt, 0)
+		if time.Now().After(expirationTime.Add(-25 * time.Minute)) {
+			//  refresh token
 			var err error
-			bluelink_auth, err = bluelink_go.Login(MyConfig.Username, MyConfig.Password, MyConfig.Pin)
+			bluelink_auth, err = bluelink_go.RefreshToken(bluelink_auth)
 			if err != nil {
 				log.Println(r.URL.Path, "could not refresh token: ", err)
+				bluelink_auth, err = bluelink_go.Login(MyConfig.Username, MyConfig.Password, MyConfig.Pin, MyConfig.VIN)
+				if err != nil {
+					log.Println(r.URL.Path, "could not relogin: ", err)
+					w.WriteHeader(http.StatusInternalServerError)
+					w.Write([]byte("500 - StatusInternalServerError"))
+					return
+				}
+			}
+		} else {
+			//re login
+			var err error
+			bluelink_auth, err = bluelink_go.Login(MyConfig.Username, MyConfig.Password, MyConfig.Pin, MyConfig.VIN)
+			if err != nil {
+				log.Println(r.URL.Path, "could not relogin: ", err)
 				w.WriteHeader(http.StatusInternalServerError)
 				w.Write([]byte("500 - StatusInternalServerError"))
 				return
 			}
-
 		}
 		next.ServeHTTP(w, r)
 	})
 }
 
 var bluelink_auth api.Auth
-var my_owner_info api.OwnerInfoService
-var vehicle_status api.VehicleStatus
-var my_car api.Vehicle
 
 func StartClimateHandler(w http.ResponseWriter, r *http.Request) {
-	// create climate input object
-	seatingventinfo := api.SeatHeaterVentInfo{}
-	seatingventinfo.DrvSeatHeatState = "3"
-	seatingventinfo.AstSeatHeatState = "0"
-	StartClimateInput := api.ClimateInput{
-		AirCtrl:            "true",
-		IgniOnDuration:     "NaN", //max is 10 minutes or NaN for default 10
-		AirTempvalue:       "72",
-		Defrost:            "false",
-		Heating1:           "0",
-		SeatHeaterVentInfo: seatingventinfo,
-	}
-	err := bluelink_go.StartClimate(bluelink_auth, my_car, StartClimateInput)
+
+	// get airtmp from context
+	ctx := r.Context()
+	params := ctx.Value(ctxBlueLinkParam{}).(Params)
+	// convert air temp string to int
+	airtemp, err := strconv.Atoi(*params.AirTemperature)
+
+	err = bluelink_go.StartClimate(bluelink_auth, airtemp)
 	if err != nil {
 		fmt.Println("Error starting climate: ", err)
 		w.WriteHeader(http.StatusInternalServerError)
@@ -167,7 +175,7 @@ func StartClimateHandler(w http.ResponseWriter, r *http.Request) {
 
 func StopClimateHandler(w http.ResponseWriter, r *http.Request) {
 	// create climate input object
-	err := bluelink_go.StopClimate(bluelink_auth, my_car)
+	err := bluelink_go.StopClimate(bluelink_auth)
 	if err != nil {
 		fmt.Println("Error stopping climate: ", err)
 		w.WriteHeader(http.StatusInternalServerError)
@@ -180,24 +188,18 @@ func StopClimateHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func GetOdometerHandler(w http.ResponseWriter, r *http.Request) {
-	my_owner_info, err := bluelink_go.GetOwnerInfo(bluelink_auth)
+	odometer, err := bluelink_go.GetOdometer(bluelink_auth)
 	if err != nil {
 		log.Println("Error GetOwnerInfo: ", err)
 		w.WriteHeader(http.StatusInternalServerError)
 		w.Write([]byte("500 - Internal Server Error"))
 		return
 	}
-	// get vehicle data from vin
-	my_car, err = bluelink_go.GetVehicleFromVin(my_owner_info, MyConfig.VIN)
-	if err != nil {
-		log.Println("Error GetVehicle: ", err)
-		w.WriteHeader(http.StatusInternalServerError)
-		w.Write([]byte("500 - Internal Server Error"))
-	}
 	w.WriteHeader(http.StatusOK)
-	w.Write([]byte(my_car.Mileage + " miles"))
+	w.Write([]byte(odometer + " miles"))
 }
 
+/*
 func GetBatteryHandler(w http.ResponseWriter, r *http.Request) {
 	var err error
 	var force_refresh bool
@@ -247,8 +249,9 @@ func GetLocationHandler(w http.ResponseWriter, r *http.Request) {
 	// format long and lat to string up to 13 digit precision
 	lon_string := strconv.FormatFloat(lon, 'f', 13, 64)
 	lat_string := strconv.FormatFloat(lat, 'f', 13, 64)
-	w.Write([]byte(lat_string +"," + lon_string ))
+	w.Write([]byte(lat_string + "," + lon_string))
 }
+*/
 
 func Setup() (Config, http.Handler, error) {
 	var err error
@@ -263,26 +266,9 @@ func Setup() (Config, http.Handler, error) {
 	log.Println("Rate burst: ", MyConfig.RateBurst)
 
 	// get auth object
-	bluelink_auth, err = bluelink_go.Login(MyConfig.Username, MyConfig.Password, MyConfig.Pin)
+	bluelink_auth, err = bluelink_go.Login(MyConfig.Username, MyConfig.Password, MyConfig.Pin, MyConfig.VIN)
 	if err != nil {
 		log.Fatal("Error logging in: ", err)
-	}
-	// get OwnerInfoService
-	my_owner_info, err = bluelink_go.GetOwnerInfo(bluelink_auth)
-	if err != nil {
-		log.Fatal("Error getting owner info: ", err)
-	}
-
-	// get vehicle object based on vin
-	my_car, err = bluelink_go.GetVehicleFromVin(my_owner_info, MyConfig.VIN)
-	if err != nil {
-		log.Fatal("Error getting vehicle: ", err)
-	}
-
-	// read vehicile status
-	vehicle_status, err = bluelink_go.GetVehicleStatus(bluelink_auth, my_car, true)
-	if err != nil {
-		log.Fatal("Error GetVehicleStatus: ", err)
 	}
 
 	limiter = rate.NewLimiter(rate.Limit(MyConfig.RateLimit), MyConfig.RateBurst)
@@ -295,9 +281,6 @@ func Setup() (Config, http.Handler, error) {
 	// get odometer
 	mux.HandleFunc("/api/get_odometer", GetOdometerHandler)
 	// get battery
-	mux.HandleFunc("/api/get_battery", GetBatteryHandler)
-	// get location
-	mux.HandleFunc("/api/get_location", GetLocationHandler)
 	// apply middle ware for rate limiting, authentication, and bluelink token refresh
 	handler := Limit(Auth(RefreshBlueLink(mux)))
 	return MyConfig, handler, err
