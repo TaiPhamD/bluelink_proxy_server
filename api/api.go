@@ -121,12 +121,23 @@ func RefreshBlueLink(next http.Handler) http.Handler {
 		// check if current time is within 25 minutes of token expiration
 		// then refresh the token
 		expirationTime := time.Unix(bluelink_auth.ExpiresAt, 0)
-		if time.Now().After(expirationTime.Add(-25 * time.Minute)) {
-			//  refresh token
-			var err error
+		var err error
+		if time.Now().After(expirationTime.Add(-1 * time.Minute)) {
+			//  relogin if token is within 1 minute of expiration date
+			bluelink_auth, err = bluelink_go.Login(MyConfig.Username, MyConfig.Password, MyConfig.Pin, MyConfig.VIN)
+			if err != nil {
+				log.Println(r.URL.Path, "could not login: ", err)
+				w.WriteHeader(http.StatusInternalServerError)
+				w.Write([]byte("500 - StatusInternalServerError"))
+				return
+			}
+
+		} else {
+			// token hasn't expired yet so just refresh
 			bluelink_auth, err = bluelink_go.RefreshToken(bluelink_auth)
 			if err != nil {
-				log.Println(r.URL.Path, "could not refresh token: ", err)
+				log.Println(r.URL.Path, "error refreshing token: ", err)
+				// attempt to do a full login if refresh fails
 				bluelink_auth, err = bluelink_go.Login(MyConfig.Username, MyConfig.Password, MyConfig.Pin, MyConfig.VIN)
 				if err != nil {
 					log.Println(r.URL.Path, "could not relogin: ", err)
@@ -134,16 +145,6 @@ func RefreshBlueLink(next http.Handler) http.Handler {
 					w.Write([]byte("500 - StatusInternalServerError"))
 					return
 				}
-			}
-		} else {
-			//re login
-			var err error
-			bluelink_auth, err = bluelink_go.Login(MyConfig.Username, MyConfig.Password, MyConfig.Pin, MyConfig.VIN)
-			if err != nil {
-				log.Println(r.URL.Path, "could not relogin: ", err)
-				w.WriteHeader(http.StatusInternalServerError)
-				w.Write([]byte("500 - StatusInternalServerError"))
-				return
 			}
 		}
 		next.ServeHTTP(w, r)

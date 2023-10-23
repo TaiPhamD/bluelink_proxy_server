@@ -1,6 +1,6 @@
 sudo systemctl stop bluelink
 
-# check if /opt/wolservice exists 
+# check if /opt/bluelink exists 
 if [ ! -d "/opt/bluelink" ]; then
     # if not then create the directory
     sudo mkdir -p /opt/bluelink
