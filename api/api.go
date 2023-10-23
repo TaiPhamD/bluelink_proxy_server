@@ -215,7 +215,10 @@ func GetBatteryHandler(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 	// convert battery status to string
 	battery_string := strconv.Itoa(vehicleStatus.VehicleStatus.EvStatus.BatteryStatus)
-	w.Write([]byte(battery_string + " percent"))
+	// convert vehicleStatus.dateTime to minutes ago
+	duration := time.Since(vehicleStatus.VehicleStatus.DateTime)
+	minutes := int(duration.Minutes())
+	w.Write([]byte(battery_string + " percent last updated " + strconv.Itoa(minutes) + " minutes ago"))
 }
 
 /*
