@@ -3,14 +3,10 @@ Proxy api server to call blue link backend services to start/stop climate contro
 
 This web proxy service uses the [GO bluelink wrapper](https://github.com/TaiPhamD/bluelink_go)
 
-# APIS
+# APIs
 - /api/start_climate
 - /api/stop_climate
-
-The follow apis below calls Bluelink's https://owners.hyundaiusa.com/bin/common/enrollmentFeature getVehicleStatus api which is extremely slow if you do a force refresh. I added logic in there to only force a refresh IF the last vehicle status time is 5 minutes or older else it will not do a force refresh. 
 - /api/get_odometer
-- /api/get_battery 
-- /api/get_location
 
 # setup config.json
 
