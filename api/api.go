@@ -160,6 +160,8 @@ func StartClimateHandler(w http.ResponseWriter, r *http.Request) {
 	// convert air temp string to int
 	airtemp, err := strconv.Atoi(*params.AirTemperature)
 
+	log.Println("starting climate with airtemp: ", airtemp)
+
 	err = bluelink_go.StartClimate(bluelink_auth, airtemp)
 	if err != nil {
 		fmt.Println("Error starting climate: ", err)
