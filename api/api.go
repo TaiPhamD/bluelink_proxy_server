@@ -171,7 +171,7 @@ func StartClimateHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.WriteHeader(http.StatusOK)
-	w.Write([]byte("climate started"))
+	w.Write([]byte("climate started for " + *params.AirTemperature + " degrees"))
 
 }
 
