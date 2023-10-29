@@ -153,6 +153,20 @@ func RefreshBlueLink(next http.Handler) http.Handler {
 
 var bluelink_auth api.Auth
 
+func DoorLockHandler(w http.ResponseWriter, r *http.Request) {
+	// create climate input object
+	err := bluelink_go.DoorLock(bluelink_auth)
+	if err != nil {
+		fmt.Println("Error locking door: ", err)
+		w.WriteHeader(http.StatusInternalServerError)
+		w.Write([]byte("500 - Internal Server Error"))
+		return
+	}
+
+	w.WriteHeader(http.StatusOK)
+	w.Write([]byte("door locked"))
+}
+
 func StartClimateHandler(w http.ResponseWriter, r *http.Request) {
 
 	// get airtmp from context
@@ -271,6 +285,9 @@ func Setup() (Config, http.Handler, error) {
 
 	limiter = rate.NewLimiter(rate.Limit(MyConfig.RateLimit), MyConfig.RateBurst)
 	mux := http.NewServeMux()
+
+	// handle LockDoor
+	mux.HandleFunc("/api/lock_door", DoorLockHandler)
 
 	// handle Restart start_climate
 	mux.HandleFunc("/api/start_climate", StartClimateHandler)

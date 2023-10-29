@@ -1,7 +1,5 @@
-github.com/TaiPhamD/bluelink_go v0.1.5 h1:KqwQizqtGNyS9Z3z9TV8yP67yxicvvtIxN64FblvsEw=
-github.com/TaiPhamD/bluelink_go v0.1.5/go.mod h1:eeWZdy+OWMCOJuDW7DsfzO4ogdFPMM2NiX2XaU7W0ts=
-github.com/TaiPhamD/bluelink_go v0.1.6 h1:T9ckJ5KqJbWrdaK6XjG9Jl1Af6IoQyFW4cZoh5SONeg=
-github.com/TaiPhamD/bluelink_go v0.1.6/go.mod h1:AQkYDJ8AyIyMOcLkpCgCObLUdxUkj2oGAHuj391IlFA=
+github.com/TaiPhamD/bluelink_go v0.1.7 h1:peaSJ8U58lqoy/c0LCuLQrRRXZytgV1bUDv6Ne9NQR8=
+github.com/TaiPhamD/bluelink_go v0.1.7/go.mod h1:AQkYDJ8AyIyMOcLkpCgCObLUdxUkj2oGAHuj391IlFA=
 github.com/kardianos/service v1.2.2 h1:ZvePhAHfvo0A7Mftk/tEzqEZ7Q4lgnR8sGz4xu1YX60=
 github.com/kardianos/service v1.2.2/go.mod h1:CIMRFEJVL+0DS1a3Nx06NaMn4Dz63Ng6O7dl0qH0zVM=
 golang.org/x/sys v0.0.0-20201015000850-e3ed0017c211/go.mod h1:h1NjWce9XRLGQEsW7wpKNCjG9DtNlClVuFLEZdDNbEs=
